@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Health AI | Prediction System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #1a1f3a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: #2a2f4d;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Profiles Section */
+        .profile-dropdown {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1a1f3a;
+            border: 2px solid #3a3f5d;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        .profile-dropdown:focus {
+            outline: none;
+            border-color: #7366bd;
+        }
+        
+        .profile-fields {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .profile-field {
+            background: #1a1f3a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #3a3f5d;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .add-profile-btn {
+            background: #7366bd;
+            border: 2px solid #7366bd;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .add-profile-btn:hover {
+            background: #5a50a0;
+            border-color: #5a50a0;
+        }
+        
+        /* Health Details Section */
+        .health-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+        
+        .health-param {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .param-label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .param-value {
+            color: #7366bd;
+            font-weight: 700;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #3a3f5d;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #7366bd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #8a7dd4;
+            box-shadow: 0 0 10px rgba(115, 102, 189, 0.5);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #7366bd;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #8a7dd4;
+            box-shadow: 0 0 10px rgba(115, 102, 189, 0.5);
+        }
+        
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: flex-start;
+        }
+        
+        .btn {
+            padding: 12px 35px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-predict {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-predict:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+        }
+        
+        .btn-reset {
+            background: #5a5f7d;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background: #4a4f6d;
+        }
+        
+        /* Result Box */
+        .result-box {
+            display: none;
+            background: #2a2f4d;
+            border-left: 5px solid;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            animation: slideIn 0.4s ease;
+        }
+        
+        .result-box.success {
+            border-left-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .result-box.danger {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .result-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+        }
+        
+        .modal-content {
+            background-color: #2a2f4d;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            background: #1a1f3a;
+            border: 2px solid #3a3f5d;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: #7366bd;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .modal-btn-save {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .modal-btn-save:hover {
+            background: #229954;
+        }
+        
+        .modal-btn-cancel {
+            background: #5a5f7d;
+            color: white;
+        }
+        
+        .modal-btn-cancel:hover {
+            background: #4a4f6d;
+        }
+        
+        @media (max-width: 768px) {
+            .health-details {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .profile-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Add Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">➕ Add New Profile</div>
+            <input type="text" id="profileName" class="modal-input" placeholder="Full Name" maxlength="50">
+            <input type="email" id="profileEmail" class="modal-input" placeholder="Email Address" maxlength="100">
+            <input type="number" id="profileAge" class="modal-input" placeholder="Age" min="18" max="100">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-save" id="saveProfileBtn">Save Profile</button>
+                <button class="modal-btn modal-btn-cancel" id="cancelProfileBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Section -->
+    <div class="section">
+        <div class="section-title">👤 Profiles</div>
+        <select class="profile-dropdown" id="profileSelect">
+            <option value="">Select a profile...</option>
+        </select>
+        <div class="profile-fields">
+            <div class="profile-field" id="profileNameDisplay">Name</div>
+            <div class="profile-field" id="profileEmailDisplay">Email</div>
+            <div class="profile-field" id="profileAgeDisplay">Age</div>
+        </div>
+        <button class="add-profile-btn" id="addProfileBtn">+ Add Profile</button>
+    </div>
+
+    <!-- Health Details Section -->
+    <div class="section">
+        <div class="section-title">📋 Enter Your Health Details</div>
+        
+        <div class="health-details">
+            <!-- Age Slider -->
+            <div class="health-param">
+                <div class="param-label">
+                    Age: <span class="param-value" id="ageValue">32</span>
+                </div>
+                <input type="range" id="age" name="age" min="18" max="100" value="32" class="slider">
+            </div>
+
+            <!-- Sex Selector -->
+            <div class="health-param">
+                <div class="param-label">Sex:</div>
+                <select id="sex" name="sex" style="padding: 10px; background: #1a1f3a; border: 1px solid #3a3f5d; border-radius: 8px; color: #fff;">
+                    <option value="1">Male ♂️</option>
+                    <option value="0">Female ♀️</option>
+                </select>
+            </div>
+
+            <!-- Resting BP Slider -->
+            <div class="health-param">
+                <div class="param-label">
+                    Resting BP: <span class="param-value" id="trestbpsValue">120</span>
+                </div>
+                <input type="range" id="trestbps" name="trestbps" min="80" max="200" value="120" class="slider">
+            </div>
+
+            <!-- Cholesterol Slider -->
+            <div class="health-param">
+                <div class="param-label">
+                    Cholesterol: <span class="param-value" id="cholValue">200</span>
+                </div>
+                <input type="range" id="chol" name="chol" min="100" max="400" value="200" class="slider">
+            </div>
+
+            <!-- Max Heart Rate Slider -->
+            <div class="health-param">
+                <div class="param-label">
+                    Max Heart Rate: <span class="param-value" id="talachValue">150</span>
+                </div>
+                <input type="range" id="thalach" name="thalach" min="60" max="220" value="150" class="slider">
+            </div>
+
+            <!-- ST Depression Slider -->
+            <div class="health-param">
+                <div class="param-label">
+                    ST Depression: <span class="param-value" id="oldpeakValue">1</span>
+                </div>
+                <input type="range" id="oldpeak" name="oldpeak" min="0" max="10" step="0.1" value="1" class="slider">
+            </div>
+        </div>
+
+        <!-- Hidden fields for other parameters -->
+        <input type="hidden" id="cp" name="cp" value="0">
+        <input type="hidden" id="fbs" name="fbs" value="0">
+        <input type="hidden" id="restecg" name="restecg" value="1">
+        <input type="hidden" id="exang" name="exang" value="0">
+        <input type="hidden" id="slope" name="slope" value="1">
+        <input type="hidden" id="ca" name="ca" value="0">
+        <input type="hidden" id="thal" name="thal" value="2">
+        
+        <!-- Buttons -->
+        <div class="button-group">
+            <button class="btn btn-predict" id="predictBtn">● Predict</button>
+            <button class="btn btn-reset" id="resetBtn">🔄 Reset</button>
+        </div>
+
+        <!-- Result Box -->
+        <div class="result-box" id="resultBox">
+            <p class="result-text" id="resultText"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Load profiles from localStorage
+    let profiles = JSON.parse(localStorage.getItem('healthProfiles')) || [
+        { name: 'sai', email: 'saitanush00@gmail.com', age: '32' }
+    ];
+    
+    let currentProfile = {};
+    
+    function saveProfiles() {
+        localStorage.setItem('healthProfiles', JSON.stringify(profiles));
+    }
+    
+    function loadProfileDropdown() {
+        const select = $('#profileSelect');
+        select.empty();
+        select.append('<option value="">Select a profile...</option>');
+        
+        profiles.forEach((profile, index) => {
+            select.append(`<option value="${index}">${profile.name} (${profile.email})</option>`);
+        });
+    }
+    
+    function updateProfileDisplay(profile) {
+        if (profile) {
+            $('#profileNameDisplay').text(profile.name);
+            $('#profileEmailDisplay').text(profile.email);
+            $('#profileAgeDisplay').text(profile.age);
+            currentProfile = profile;
+        }
+    }
+    
+    // Initialize profiles dropdown
+    loadProfileDropdown();
+    updateProfileDisplay(profiles[0]);
+    
+    // Profile dropdown change
+    $('#profileSelect').on('change', function() {
+        const index = $(this).val();
+        if (index !== '') {
+            updateProfileDisplay(profiles[index]);
+        }
+    });
+    
+    // Add Profile Button
+    $('#addProfileBtn').on('click', function() {
+        $('#profileModal').fadeIn();
+        $('#profileName').focus();
+    });
+    
+    // Save Profile Button
+    $('#saveProfileBtn').on('click', function() {
+        const name = $('#profileName').val().trim();
+        const email = $('#profileEmail').val().trim();
+        const age = $('#profileAge').val().trim();
+        
+        if (!name || !email || !age) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        
+        profiles.push({ name, email, age });
+        saveProfiles();
+        loadProfileDropdown();
+        updateProfileDisplay(profiles[profiles.length - 1]);
+        
+        // Clear form and close modal
+        $('#profileName').val('');
+        $('#profileEmail').val('');
+        $('#profileAge').val('');
+        $('#profileModal').fadeOut();
+    });
+    
+    // Cancel Button
+    $('#cancelProfileBtn').on('click', function() {
+        $('#profileModal').fadeOut();
+    });
+    
+    // Close modal when clicking outside
+    $(window).on('click', function(event) {
+        if (event.target == document.getElementById('profileModal')) {
+            $('#profileModal').fadeOut();
+        }
+    });
+    
+    // Update slider values
+    $('#age').on('input', function() {
+        $('#ageValue').text($(this).val());
+    });
+    
+    $('#trestbps').on('input', function() {
+        $('#trestbpsValue').text($(this).val());
+    });
+    
+    $('#chol').on('input', function() {
+        $('#cholValue').text($(this).val());
+    });
+    
+    $('#thalach').on('input', function() {
+        $('#talachValue').text($(this).val());
+    });
+    
+    $('#oldpeak').on('input', function() {
+        $('#oldpeakValue').text($(this).val());
+    });
+
+    // Predict Button
+    $('#predictBtn').on('click', function() {
+        const data = {
+            name: currentProfile.name || 'sai',
+            email: currentProfile.email || 'saitanush00@gmail.com',
+            age: $('#age').val(),
+            sex: $('#sex').val(),
+            cp: $('#cp').val(),
+            trestbps: $('#trestbps').val(),
+            chol: $('#chol').val(),
+            fbs: $('#fbs').val(),
+            restecg: $('#restecg').val(),
+            thalach: $('#thalach').val(),
+            exang: $('#exang').val(),
+            oldpeak: $('#oldpeak').val(),
+            slope: $('#slope').val(),
+            ca: $('#ca').val(),
+            thal: $('#thal').val()
+        };
+
+        $.ajax({
+            url: 'http://127.0.0.1:5000/predict',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                const resultClass = response.prediction === 1 ? 'danger' : 'success';
+                const resultIcon = response.prediction === 1 ? '⚠️' : '✅';
+                
+                $('#resultBox')
+                    .removeClass('success danger')
+                    .addClass(resultClass)
+                    .find('#resultText')
+                    .html(`${resultIcon} ${response.message}`)
+                    .end()
+                    .fadeIn();
+            },
+            error: function(err) {
+                alert('Error: Unable to reach backend. Make sure Flask is running on port 5000.');
+                console.error(err);
+            }
+        });
+    });
+
+    // Reset Button
+    $('#resetBtn').on('click', function() {
+        $('#age').val(32);
+        $('#ageValue').text('32');
+        $('#trestbps').val(120);
+        $('#trestbpsValue').text('120');
+        $('#chol').val(200);
+        $('#cholValue').text('200');
+        $('#thalach').val(150);
+        $('#talachValue').text('150');
+        $('#oldpeak').val(1);
+        $('#oldpeakValue').text('1');
+        $('#sex').val('1');
+        $('#resultBox').fadeOut();
+    });
+});
+</script>
+</body>
+</html>
